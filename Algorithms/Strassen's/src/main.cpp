@@ -10,7 +10,7 @@ int main(void)
         Matrix b(2, false);
         a.print();
         b.print();
-        Matrix c = a - b;
+        Matrix c = a * b;
         c.print();
     }
     catch (const std::exception &e)
