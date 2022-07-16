@@ -49,7 +49,6 @@ void Matrix::print() const
 
 size_t Matrix::get_index(size_t r, size_t c) const
 {
-    
     if (size_t i = r * m_size + c; i < m_data.size())
         return i;
     throw std::out_of_range("Matrix::at() : index out of range");
