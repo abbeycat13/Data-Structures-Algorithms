@@ -78,10 +78,9 @@ Matrix Matrix::partition(size_t row_start, size_t col_start) const
 
 void Matrix::combine(Matrix &R_11, Matrix &R_12, Matrix &R_21, Matrix &R_22)
 {
-    size_t i, j;
     size_t const k = m_size / 2;
 
-    auto determine_quad = [&] () {
+    auto determine_quad = [&] (size_t i, size_t j) {
         if (i < k && j < k)
             return R_11.at_ref(i, j);
         if (i < k && j >= k)
@@ -91,9 +90,9 @@ void Matrix::combine(Matrix &R_11, Matrix &R_12, Matrix &R_21, Matrix &R_22)
         return R_22.at_ref(i-k, j-k);
     };
     
-    for (i = 0; i < m_size; ++i) {
-        for (j = 0; j < m_size; ++j) {
-            at_ref(i, j) = determine_quad();
+    for (size_t i = 0; i < m_size; ++i) {
+        for (size_t j = 0; j < m_size; ++j) {
+            at_ref(i, j) = determine_quad(i, j);
         }
     }
 }
