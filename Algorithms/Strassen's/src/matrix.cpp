@@ -1,19 +1,20 @@
 #include "matrix.hpp"
-#include <random>
-#include <iostream>
+#include <algorithm>
 #include <cmath>
+#include <iostream>
+#include <random>
 #include <stdexcept>
 
 // populates the matrix with random values
 void Matrix::randomize()
 {
-    std::random_device rd; // obtains seed for the random number engine
+    // obtains seed for the random number engine
+    std::random_device rd;
     std::mt19937 gen(rd());
-    std::uniform_int_distribution<> distrib(1, 4);
-    for (size_t i = 0; i < m_data.size(); ++i)
-    {
-        m_data[i] = distrib(gen);
-    }
+    std::uniform_int_distribution distribution(1, 4);
+    std::ranges::for_each (m_data, [&](int& it) {
+        it = distribution(gen);
+    });
 }
 
 Matrix::Matrix(size_t s, bool empty)
@@ -48,8 +49,7 @@ void Matrix::print() const
 
 size_t Matrix::get_index(size_t r, size_t c) const
 {
-    size_t i = r * m_size + c;
-    if (i < m_data.size())
+    if (size_t i = r * m_size + c; i < m_data.size())
         return i;
     throw std::out_of_range("Matrix::at() : index out of range");
 }
@@ -66,21 +66,20 @@ int Matrix::at(size_t r, size_t c) const
 
 Matrix Matrix::partition(size_t row_start, size_t col_start) const
 {
-    size_t const s = m_size / 2; // size of submatrix
-    Matrix submatrix(s);
+    size_t const s = m_size / 2; // size of sub_matrix
+    Matrix sub_matrix(s);
     for (size_t i = 0; i < s; ++i) {
         for (size_t j = 0; j < s; ++j)
-            submatrix.at_ref(i, j) = at(i + row_start, j + col_start);
+            sub_matrix.at_ref(i, j) = at(i + row_start, j + col_start);
     }
-    return submatrix;
+    return sub_matrix;
 }
 
 void Matrix::combine(Matrix &R_11, Matrix &R_12, Matrix &R_21, Matrix &R_22)
 {
-    size_t i, j;
     size_t const k = m_size / 2;
 
-    auto determine_quad = [&] () {
+    auto determine_quad = [&] (size_t i, size_t j) {
         if (i < k && j < k)
             return R_11.at_ref(i, j);
         if (i < k && j >= k)
@@ -90,9 +89,9 @@ void Matrix::combine(Matrix &R_11, Matrix &R_12, Matrix &R_21, Matrix &R_22)
         return R_22.at_ref(i-k, j-k);
     };
     
-    for (i = 0; i < m_size; ++i) {
-        for (j = 0; j < m_size; ++j) {
-            at_ref(i, j) = std::move(determine_quad());
+    for (size_t i = 0; i < m_size; ++i) {
+        for (size_t j = 0; j < m_size; ++j) {
+            at_ref(i, j) = determine_quad(i, j);
         }
     }
 }
