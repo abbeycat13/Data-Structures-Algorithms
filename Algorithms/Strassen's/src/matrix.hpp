@@ -7,6 +7,7 @@ private:
     size_t m_size;
     std::vector<int> m_data;
     Matrix multiply(Matrix const &other) const;
+    Matrix strassen(Matrix const &other) const;
     size_t get_index(size_t r, size_t c) const;
     Matrix partition(size_t row_start, size_t col_start) const;
     void combine(Matrix &R_11, Matrix &R_12, Matrix &R_21, Matrix &R_22);

@@ -6,12 +6,14 @@ int main(void)
 {
     try
     {
-        Matrix a(2, false);
-        Matrix b(2, false);
-        a.print();
-        b.print();
-        Matrix c = a * b;
-        c.print();
+        Matrix A(4, false);
+        Matrix B(4, false);
+        std::cout << "Matrix A:\n";
+        A.print();
+        std::cout << "Matrix B:\n";
+        B.print();
+        std::cout << "A x B:\n";
+        (A * B).print();
     }
     catch (const std::exception &e)
     {

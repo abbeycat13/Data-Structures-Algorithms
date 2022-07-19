@@ -2,6 +2,7 @@
 #include <algorithm>
 #include <cmath>
 #include <iostream>
+#include <iomanip>
 #include <random>
 #include <stdexcept>
 
@@ -11,8 +12,8 @@ void Matrix::randomize()
     // obtains seed for the random number engine
     std::random_device rd;
     std::mt19937 gen(rd());
-    std::uniform_int_distribution distribution(1, 4);
-    std::ranges::for_each (m_data, [&](int& it) {
+    std::uniform_int_distribution distribution(-9, 9);
+    for_each (m_data.begin(), m_data.end(), [&](int& it) {
         it = distribution(gen);
     });
 }
@@ -41,7 +42,7 @@ void Matrix::print() const
     for (size_t i = 0; i < m_size; ++i)
     {
         for (size_t j = 0; j < m_size; ++j)
-            std::cout << at(i, j) << " ";
+            std::cout << std::setw(4) << at(i, j) << " ";
         std::cout << "\n";
     }
     std::cout << "\n";
@@ -126,11 +127,36 @@ Matrix Matrix::multiply(Matrix const &other) const
     return result;
 }
 
+Matrix Matrix::strassen(Matrix const &other) const 
+{
+    if (m_size == 1)
+        return multiply(other);
+
+    Matrix result(m_size);
+    size_t const k = m_size / 2;
+
+    Matrix P1 = partition(0, 0).multiply(other.partition(0, k) - other.partition(k, k));
+    Matrix P2 = (partition(0, 0) + partition(0, k)).multiply(other.partition(k, k));
+    Matrix P3 = (partition(k, 0) + partition(k, k)).multiply(other.partition(0, 0));
+    Matrix P4 = partition(k, k).multiply(other.partition(k, 0) - other.partition(0, 0));
+    Matrix P5 = (partition(0, 0) + partition(k, k)).multiply(other.partition(0, 0) + other.partition(k, k));
+    Matrix P6 = (partition(0, k) - partition(k, k)).multiply(other.partition(k, 0) + other.partition(k, k));
+    Matrix P7 = (partition(0, 0) - partition(k, 0)).multiply(other.partition(0, 0) + other.partition(0, k));
+
+    Matrix R_11 = ((P5 + P4) - P2) + P6;
+    Matrix R_12 = P1 + P2;
+    Matrix R_21 = P3 + P4;
+    Matrix R_22 = ((P5 + P1) - P3) - P7;
+
+    result.combine(R_11, R_12, R_21, R_22);
+    return result;
+}
+
 Matrix Matrix::operator+(Matrix const &other) const
 {
     // make sure matrices are the same size (cannot add square matrices of different sizes)
     if (m_size != other.m_size)
-        throw std::invalid_argument("Matrices must be the same size");
+        throw std::invalid_argument("Cannot add matrices of different size");
     Matrix result(m_size);
     for (size_t i = 0; i < m_data.size(); ++i) {
         result.m_data[i] = m_data[i] + other.m_data[i];
@@ -142,7 +168,7 @@ Matrix Matrix::operator-(Matrix const &other) const
 {
     // make sure matrices are the same size (cannot subtract square matrices of different sizes)
     if (m_size != other.m_size)
-        throw std::invalid_argument("Matrices must be the same size");
+        throw std::invalid_argument("Cannot subtract matrices of different size");
     Matrix result(m_size);
     for (size_t i = 0; i < m_data.size(); ++i) {
         result.m_data[i] = m_data[i] - other.m_data[i];
@@ -154,7 +180,7 @@ Matrix Matrix::operator*(Matrix const &other) const
 {
     // make sure matrices are the same size (cannot multiply square matrices of different sizes)
     if (m_size != other.m_size)
-        throw std::invalid_argument("Matrices must be the same size");
+        throw std::invalid_argument("Cannot multiply matrices of different size");
 
-    return multiply(other);
+    return strassen(other);
 }
